@@ -2,9 +2,13 @@
 # Outputs
 ##############################################################################
 
-output cms_id {
-    description = "CMS ID if included"
-    value       = var.enable_alb_cert ? module.cms.id : null
+output subnet_ids {
+  description = "IDs of subnets created for this tier"
+  value       = ibm_is_subnet.subnet.*.id
+}  
+
+output cidr_blocks {
+  value       = ibm_is_subnet.subnet.*.ipv4_cidr_block
 }
 
 ##############################################################################

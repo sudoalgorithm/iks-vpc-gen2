@@ -45,6 +45,8 @@ resource ibm_container_vpc_worker_pool pool {
         ? data.ibm_resource_group.pool_rg[lookup(var.pool_list[count.index], "resource_group")]
         : var.resource_group_id
     )
+    
+    entitlement       = var.entitlement
     cluster            = var.cluster_name_id
     worker_pool_name   = var.pool_list[count.index].pool_name
     flavor             = var.pool_list[count.index].machine_type

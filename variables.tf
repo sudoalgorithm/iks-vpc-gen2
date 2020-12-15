@@ -1,16 +1,16 @@
 ##############################################################################
-# Account variables
+# Account Variables
 ##############################################################################
 
 variable ibmcloud_api_key {
-    description = "The IBM Cloud platform API key needed to deploy IAM enabled resources"
-    type        = string
+  description = "The IBM Cloud platform API key needed to deploy IAM enabled resources"
+  type        = string
 }
 
-variable generation {
-    description = "Generation of VPC. Can be 1 or 2"
-    type        = number
-    default     = 2
+variable unique_id {
+    description = "A unique identifier need to provision resources. Must begin with a letter"
+    type        = string
+    default     = "asset-roks-gen2"
 }
 
 variable ibm_region {
@@ -19,28 +19,52 @@ variable ibm_region {
 }
 
 variable resource_group {
-    description = "Name for IBM Cloud Resource Group where resources will be deployed"
+    description = "Name of resource group to create VPC"
     type        = string
+    default     = "asset-development"
 }
 
-##############################################################################
-
-
-##############################################################################
-# VPC Variables
-##############################################################################
-
-variable vpc_name {
-    description = "Name of VPC where cluster is to be created"
-    type        = string
+variable generation {
+  description = "generation for VPC. Can be 1 or 2"
+  #type        = number
+  default     = 2
 }
 
-
-variable subnet_ids {
-    description = "List of subnet ids"
-    type        = list
-    default     = []
+variable enable_public_gateway {
+  description = "Enable public gateways for subnets, true or false"
+  #type        = bool
+  default     = true
 }
+
+variable cidr_blocks {
+  description = "A list of CIDR blocks for the VPC subnets"
+  type        = list
+  default     = [
+    "10.10.0.0/24",
+    "10.10.20.0/24",
+    "10.20.30.0/24"
+  ]
+}
+
+variable acl_rules {
+  description = "Access control list rule set"
+  default     = [
+    {
+      name        = "egress"
+      action      = "allow"
+      source      = "0.0.0.0/0"
+      destination = "0.0.0.0/0"
+      direction   = "inbound"
+    },
+    {
+      name        = "ingress"
+      action      = "allow"
+      source      = "0.0.0.0/0"
+      destination = "0.0.0.0/0"
+      direction   = "outbound"
+    }
+  ]
+}  
 
 ##############################################################################
 
@@ -49,22 +73,16 @@ variable subnet_ids {
 # Cluster Variables
 ##############################################################################
 
-variable cluster_name {
-    description = "Name of cluster to be provisioned"
-    type        = string
-    default     = "demo-cluster"
-}
-
 variable machine_type {
     description = "The flavor of VPC worker node to use for your cluster"
     type        = string
-    default     = "cx2.4x8"
+    default     = "bx2.4x16"
 }
 
 variable workers_per_zone {
-    description = "Number of workers to provision in each subnet. Opnshift cluster "
+    description = "Number of workers to provision in each subnet. Openshift worker pool size must be 2 or greater."
     type        = number
-    default     = 1
+    default     = 2
 }
 
 variable disable_public_service_endpoint {
@@ -87,12 +105,12 @@ variable wait_till {
 
 variable tags {
     description = "A list of tags to add to the cluster"
-    type        = list
+    type        = list(string)
     default     = []
 }
 
 variable worker_pools {
-    description = "List of maps describing worker pools"
+    description = "List of maps describing worker pools. Worker pools must have at least 2 workers per zone"
     # type        = list(
     #     object({
     #         pool_name        = string
@@ -104,65 +122,64 @@ variable worker_pools {
     #    {
     #        pool_name        = "dev"
     #        machine_type     = "c2.2x4"
-    #        workers_per_zone = 1
+    #        workers_per_zone = 2
     #        resource_group   = "default"
     #    },
     #    {
     #        pool_name        = "prod"
     #        machine_type     = "c2.2x4"
-    #        workers_per_zone = 1
+    #        workers_per_zone = 2
     #    }
     #]
 }
 
-
-variable enable_public_albs {
-    description = "Enable public albs"
-    type        = bool
-    default     = true
-}
-
-variable enable_private_albs {
-    description = "Enable private albs"
-    type        = bool
-    default     = true
-}
-
 ##############################################################################
 
 
 ##############################################################################
-# ALB Cert Variables
+# Resource Variables
 ##############################################################################
 
-variable enable_alb_cert {
-    description = "Enable ALB cert. Use only if albs are enabled"
-    type        = bool
-    default     = false
+variable service_endpoints {
+  description = "Service endpoints for resource instances. Can be `public`, `private`, or `public-and-private`"
+  type        = string
+  default     = "private"
 }
 
-variable bring_your_own_cms {
-    description = "Bring your own certificate managemant instance. If false, one will be created"
-    type        = bool
-    default     = false
+variable kms_plan {
+  description = "Plan for Key Protect"
+  type        = string
+  default     = "tiered-pricing"  
 }
 
-variable cms_name {
-    description = "Name of certificate management instance"
-    type        = string
-    default     = "alb-cert-demo"
+variable kms_root_key_name {
+  description = "Name of the root key for Key Protect instance"
+  type        = string
+  default     = "root-key"
 }
 
-variable cms_plan {
-    description = "Name of the plan for CMS. Use only if `bring_your_own_cms` is false"
-    type        = string    
-    default     = "free"
+variable cos_plan {
+  description = "Plan for Cloud Object Storage instance"
+  type        = string
+  default     = "standard"
 }
 
-variable certificate_name {
-    description = "Name of the ALB certificate to import"
-    type        = string
-    default     = "demo-alb-cert"
+variable psql_plan {
+  description = "Plan for Databases for PostgreSQL"
+  type        = string
+  default     = "standard"
+}
+
+variable logdna_plan {
+  description = "Plan for Databases for PostgreSQL"
+  type        = string
+  default     = "7-day"
+}
+
+variable sysdig_plan {
+  description = "Plan for Databases for PostgreSQL"
+  type        = string
+  default     = "graduated-tier"
 }
 
 ##############################################################################
